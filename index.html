@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA – Percentages: Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --navy:#0f2556;--navy2:#1a3a7c;--navy3:#2851a3;
+    --gold:#e8a020;--green:#1a7a3c;--red:#b91c1c;
+    --purple:#7c3aed;--gray:#9ca3af;--lightbg:#f3f4f8;
+    --border:#d1d5db;--text:#1e293b;--subtext:#64748b;
+  }
+  html,body{height:100%;font-family:'IBM Plex Sans',sans-serif;background:var(--lightbg);color:var(--text);font-size:14px}
+
+  .header{background:var(--navy);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:52px;position:fixed;top:0;left:0;right:0;z-index:200;border-bottom:3px solid var(--gold)}
+  .logo{font-size:18px;font-weight:700;color:white}.logo span{color:var(--gold)}
+  .header-center{display:flex;align-items:center;gap:12px}
+  .section-badge{background:var(--navy3);padding:4px 12px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+  .header-info{font-size:11px;color:#aac}
+  .timer-wrap{display:flex;align-items:center;gap:8px}
+  .timer-label{font-size:11px;color:#99b;letter-spacing:1px;text-transform:uppercase}
+  .timer{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500;color:#fff;background:var(--navy2);border:1.5px solid #4466aa;padding:3px 14px;border-radius:6px;min-width:90px;text-align:center;letter-spacing:2px}
+  .timer.warning{color:var(--gold);border-color:var(--gold);animation:pulse 1s ease-in-out infinite}
+  .timer.danger{color:#ff6b6b;border-color:#ff6b6b;animation:pulse 0.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+  .header-student{font-size:11px;color:#ccddff;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .section-tabs{position:fixed;top:52px;left:0;right:0;z-index:190;background:var(--navy2);display:flex;align-items:center;padding:6px 18px;gap:4px;border-bottom:1px solid #2a4a9a}
+  .tab{padding:5px 12px;border-radius:4px 4px 0 0;font-size:11.5px;font-weight:600;cursor:pointer;color:#99b;background:transparent;border:none}
+  .tab.active{background:white;color:var(--navy)}
+  .q-counter{margin-left:auto;font-size:12px;color:#aac}
+
+  .main{display:flex;height:100vh;padding-top:90px;padding-bottom:56px}
+  .question-panel{flex:1;overflow-y:auto;background:white;border-right:1px solid var(--border)}
+  .question-inner{padding:22px 28px}
+
+  /* Context box */
+  .ctx-box{background:#f0f4ff;border:1px solid #c8d8f8;border-left:4px solid var(--navy3);border-radius:6px;padding:14px 18px;margin-bottom:16px;font-size:13.5px}
+  .ctx-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy3);margin-bottom:10px}
+  .ctx-table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:13px}
+  .ctx-table th{background:var(--navy3);color:white;padding:6px 10px;text-align:center;font-size:11px;font-weight:600}
+  .ctx-table td{padding:7px 10px;text-align:center;border:1px solid #c8d8f8;background:white}
+  .ctx-table td.missing{background:#fff8e1;color:#b07000;font-weight:700;letter-spacing:1px}
+  .ctx-table td.given{color:var(--navy);font-weight:600}
+
+  /* Successive chain */
+  .chain-box{background:#f3e8ff;border:1px solid #d8b8f8;border-left:4px solid var(--purple);border-radius:6px;padding:14px 18px;margin-bottom:16px}
+  .chain-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--purple);margin-bottom:10px}
+  .chain-steps{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:13px;font-family:'IBM Plex Mono',monospace}
+  .chain-step{background:white;border:1.5px solid var(--purple);padding:5px 12px;border-radius:20px;color:var(--purple);font-weight:600;font-size:12.5px}
+  .chain-arrow{color:#9ca3af;font-size:16px;font-weight:700}
+
+  .q-meta{display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+  .q-num-label{font-size:14px;font-weight:700;color:var(--navy)}
+  .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600}
+  .badge-tita{background:#fff3e0;color:#c45000}
+  .badge-mcq{background:#e0eaff;color:var(--navy3)}
+  .badge-s1{background:#e8f5ee;color:var(--green)}
+  .badge-s2{background:#e0eaff;color:var(--navy3)}
+  .badge-s3{background:#f3e8ff;color:var(--purple)}
+
+  .q-text{font-size:14px;line-height:1.78;margin-bottom:8px;font-weight:500;color:var(--text)}
+  .instr{background:#f0f4ff;border:1px solid #c8d8f8;border-radius:5px;padding:8px 12px;font-size:12px;color:#2a4a9a;margin-bottom:14px;line-height:1.5}
+  .hint-box{background:#fffbf0;border:1px solid #f0e0a0;border-radius:5px;padding:9px 13px;font-size:12px;color:#b07000;margin-top:16px;line-height:1.5}
+
+  /* OPTIONS */
+  .options{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:4px}
+  .option{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;transition:border-color 0.15s,background 0.15s;font-size:13.5px;line-height:1.65;user-select:none}
+  .option:hover{border-color:var(--navy3);background:#f0f4ff}
+  .option.selected{border-color:var(--navy3);background:#e8eeff}
+  .opt-radio{width:16px;height:16px;border:2px solid var(--border);border-radius:50%;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center}
+  .option.selected .opt-radio{border-color:var(--navy3)}
+  .opt-dot{width:8px;height:8px;border-radius:50%;background:var(--navy3);display:none}
+  .option.selected .opt-dot{display:block}
+  .opt-label{font-weight:600;color:var(--navy3);margin-right:4px;flex-shrink:0}
+
+  /* TITA */
+  .tita-wrap{margin-top:10px}
+  .tita-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--subtext);margin-bottom:8px}
+  .tita-input{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;letter-spacing:4px;text-align:center;border:2.5px solid var(--navy3);border-radius:8px;padding:12px 20px;width:240px;color:var(--navy);background:#f8f9ff;display:block;transition:border-color 0.15s,box-shadow 0.15s}
+  .tita-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,160,32,0.2)}
+  .tita-hint{font-size:11px;color:var(--subtext);margin-top:6px}
+
+  /* RIGHT */
+  .right-panel{width:226px;background:#f8f9fc;border-left:1px solid var(--border);overflow-y:auto;padding:12px;flex-shrink:0}
+  .right-panel::-webkit-scrollbar{width:5px}
+  .right-panel::-webkit-scrollbar-thumb{background:#c0c8d8;border-radius:3px}
+  .scoring-info{background:white;border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:12px}
+  .si-title{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--subtext);margin-bottom:7px}
+  .si-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0}
+  .si-row .si-v{font-weight:700}
+  .si-row.green .si-v{color:var(--green)}
+  .si-row.red .si-v{color:var(--red)}
+  .tita-note{font-size:10.5px;color:#aab;margin-top:6px;line-height:1.4}
+
+  .palette-title{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--subtext);margin-bottom:8px}
+  .palette-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:14px}
+  .pb{width:32px;height:32px;border:none;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;color:white;transition:transform 0.1s}
+  .pb:hover{transform:scale(1.1)}
+  .pb.p-current{box-shadow:0 0 0 3px var(--gold);z-index:1}
+  .pb.p-nv{background:#9ca3af}.pb.p-na{background:#ef4444}.pb.p-ans{background:#16a34a}
+  .pb.p-mrv{background:var(--purple)}.pb.p-amrv{background:var(--purple);border:2px solid #16a34a}
+
+  .legend{margin-bottom:12px}
+  .leg-item{display:flex;align-items:center;gap:7px;margin:4px 0;font-size:11px;color:var(--subtext)}
+  .leg-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+
+  .sect-jump{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+  .sj-btn{padding:4px 10px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;color:var(--subtext);background:white;transition:all 0.15s}
+  .sj-btn:hover,.sj-btn.active{background:var(--navy3);color:white;border-color:var(--navy3)}
+
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#eef0f5;border-top:1px solid var(--border);padding:9px 16px;display:flex;justify-content:space-between;align-items:center}
+  .nav-left,.nav-right{display:flex;gap:8px}
+  .btn{padding:7px 15px;border:none;border-radius:5px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:opacity 0.15s,transform 0.1s}
+  .btn:hover{opacity:0.88;transform:translateY(-1px)}
+  .btn-prev{background:#64748b;color:white}.btn-mark{background:var(--purple);color:white}
+  .btn-clear{background:#f97316;color:white}.btn-save{background:var(--green);color:white}
+  .btn-submit{background:var(--navy);color:white;border:2px solid var(--gold)}
+
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;justify-content:center;align-items:center}
+  .overlay.show{display:flex}
+  .modal-box{background:white;border-radius:12px;padding:28px 32px;max-width:680px;width:94%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+  .modal-box::-webkit-scrollbar{width:6px}
+  .modal-box::-webkit-scrollbar-thumb{background:#c0c8d8;border-radius:3px}
+  .modal-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:5px;text-align:center}
+  .modal-sub{font-size:13px;color:var(--subtext);text-align:center;margin-bottom:20px}
+  .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  .score-card{background:var(--lightbg);border-radius:8px;padding:14px 10px;text-align:center;border:1px solid var(--border)}
+  .sc-label{font-size:10px;color:var(--subtext);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
+  .sc-val{font-size:26px;font-weight:700;line-height:1}
+  .sc-val.v-blue{color:var(--navy3)}.sc-val.v-green{color:var(--green)}.sc-val.v-gold{color:var(--gold)}
+  .sep{height:1px;background:var(--border);margin:14px 0}
+  .analysis-title{font-size:14px;font-weight:700;color:var(--navy);margin:16px 0 10px}
+  table.atbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.atbl th{background:var(--navy);color:white;padding:8px 10px;text-align:center;font-weight:600;font-size:11px}
+  table.atbl td{padding:7px 10px;text-align:center;border-bottom:1px solid #f0f0f0}
+  table.atbl tr:nth-child(even) td{background:#f8f9fc}
+  .review-q{padding:12px 0;border-bottom:1px solid #f0f0f0}
+  .rq-header{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .rq-num{font-weight:700;font-size:12px;color:var(--navy3)}
+  .rq-status{font-size:11px;margin-left:auto;font-weight:600}
+  .rq-status.correct{color:var(--green)}.rq-status.wrong{color:var(--red)}.rq-status.skip{color:var(--gray)}
+  .rq-ans{font-size:12.5px;margin-top:4px}
+  .rq-your{color:#555}.rq-correct{color:var(--green);font-weight:600}
+  .confirm-box{background:white;border-radius:12px;padding:28px;max-width:380px;text-align:center}
+  .confirm-box h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:10px}
+  .confirm-box p{font-size:13px;color:var(--subtext);margin-bottom:8px;line-height:1.6}
+  .confirm-stats{background:var(--lightbg);border-radius:6px;padding:12px;margin:12px 0;font-size:13px;display:flex;flex-direction:column;gap:4px}
+  .cs-row{display:flex;justify-content:space-between}
+  .confirm-btns{display:flex;gap:10px;margin-top:16px;justify-content:center}
+  .btn-cancel{background:#e5e7eb;color:var(--text)}
+  .btn-confirm-sub{background:var(--navy);color:white;border:2px solid var(--gold)}
+  .timeup-box{background:white;border-radius:12px;padding:32px;max-width:360px;text-align:center}
+  .timeup-box h2{font-size:22px;font-weight:700;color:var(--red);margin-bottom:8px}
+  .timeup-box p{color:var(--subtext);font-size:13px;margin-bottom:20px}
+  .rtabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .rtab{padding:6px 14px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;color:var(--subtext)}
+  .rtab.active{background:var(--navy);color:white;border-color:var(--navy)}
+  .btn-review-close{background:var(--navy);color:white;width:100%;margin-top:16px;padding:10px;font-size:13px;border-radius:6px;border:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-weight:600}
+
+  /* ENTRY */
+  .entry-overlay{position:fixed;inset:0;background:linear-gradient(145deg,#070f24 0%,#0f2556 55%,#1a3a7c 100%);z-index:1000;display:flex;align-items:center;justify-content:center}
+  .entry-card{background:white;border-radius:16px;padding:36px 40px;width:430px;max-width:93vw;box-shadow:0 28px 80px rgba(0,0,0,0.5)}
+  .entry-logo{font-size:21px;font-weight:700;color:var(--navy);margin-bottom:6px}
+  .entry-logo span{color:var(--gold)}
+  .entry-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:2px}
+  .entry-sub{font-size:12px;color:var(--subtext);margin-bottom:20px;line-height:1.5}
+  .entry-divider{height:1px;background:var(--border);margin-bottom:20px}
+  .entry-field{margin-bottom:13px}
+  .entry-label{display:block;font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--subtext);margin-bottom:5px}
+  .entry-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:13.5px;font-family:'IBM Plex Sans',sans-serif;color:var(--text);background:#fff;transition:border-color 0.15s}
+  .entry-input:focus{outline:none;border-color:var(--navy3);box-shadow:0 0 0 3px rgba(40,81,163,0.15)}
+  .entry-input::placeholder{color:#b0b8c8}
+  select.entry-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+  .entry-error{color:#b91c1c;font-size:12px;font-weight:600;margin-bottom:10px;min-height:18px}
+  .entry-btn{width:100%;padding:11px;background:var(--navy);color:white;border:2px solid var(--gold);border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s}
+  .entry-btn:hover{background:var(--navy2)}
+  .entry-note{font-size:11px;color:var(--subtext);text-align:center;margin-top:10px;line-height:1.5}
+  .student-strip{background:var(--lightbg);border:1px solid var(--border);border-radius:7px;padding:9px 14px;margin-bottom:16px;font-size:12px;color:var(--subtext);display:flex;flex-wrap:wrap;gap:6px 18px}
+  .student-strip strong{color:var(--navy);font-weight:700}
+  .submit-toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1a7a3c;color:white;padding:8px 22px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:opacity 0.4s;z-index:800;pointer-events:none;white-space:nowrap}
+  .submit-toast.show{opacity:1}.submit-toast.error{background:#b91c1c}
+  @keyframes progbar{from{width:0%}to{width:100%}}
+</style>
+</head>
+<body>
+
+<!-- ENTRY -->
+<div class="entry-overlay" id="entry-overlay">
+  <div class="entry-card">
+    <div class="entry-logo">QA <span>Math Reboot</span></div>
+    <div class="entry-title">Percentages: Practice Test</div>
+    <div class="entry-sub">Fill in your details. The 40-minute timer starts only after you click <strong>Begin Test</strong>.</div>
+    <div class="entry-divider"></div>
+    <div class="entry-field"><label class="entry-label">Student Name *</label><input class="entry-input" id="inp-name" type="text" placeholder="Your full name" autocomplete="off"/></div>
+    <div class="entry-field">
+      <label class="entry-label">Center *</label>
+      <select class="entry-input" id="inp-center">
+        <option value="">— Select your center —</option>
+        <option value="Ahmedabad">Ahmedabad</option>
+        <option value="Gandhinagar">Gandhinagar</option>
+        <option value="Vadodara">Vadodara</option>
+        <option value="Surat">Surat</option>
+        <option value="Gujarat Online">Gujarat Online</option>
+      </select>
+    </div>
+    <div class="entry-field"><label class="entry-label">Batch *</label><input class="entry-input" id="inp-batch" type="text" placeholder="e.g. CAT 26 · 2701" autocomplete="off"/></div>
+    <div class="entry-error" id="entry-error"></div>
+    <button class="entry-btn" onclick="startTest()">Begin Test ▶</button>
+    <div class="entry-note">Once you begin, the timer cannot be paused.</div>
+  </div>
+</div>
+
+<div class="submit-toast" id="submit-toast"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">QA <span>Percentages</span> <span style="font-size:12px;font-weight:400;color:#aac;">· Practice</span></div>
+  <div class="header-center">
+    <div class="section-badge">QA Practice</div>
+    <div class="header-info">44 Questions &nbsp;·&nbsp; 60 Minutes &nbsp;·&nbsp; 3 Segments</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="header-student" id="header-student"></div>
+    <div class="timer-wrap">
+      <div class="timer-label">Time Left</div>
+      <div class="timer" id="timer">40:00</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-tabs">
+  <div class="tab active" id="tab1">§1 · Basic % &nbsp;(Q1–10)</div>
+  <div class="tab" id="tab2">§2 · % Change &nbsp;(Q11–34)</div>
+  <div class="tab" id="tab3">§3 · Successive % &nbsp;(Q35–44)</div>
+  <div class="q-counter">Q <span id="cur-q-num">1</span> / 44</div>
+</div>
+
+<div class="main">
+  <div class="question-panel"><div class="question-inner" id="question-inner"></div></div>
+  <div class="right-panel">
+    <div class="scoring-info">
+      <div class="si-title">Marking Scheme</div>
+      <div class="si-row green"><span>Correct (any)</span><span class="si-v">+3</span></div>
+      <div class="si-row red"><span>Wrong (MCQ only)</span><span class="si-v">−1</span></div>
+      <div class="si-row"><span style="color:#888">Wrong (TITA)</span><span class="si-v" style="color:#888">0</span></div>
+      <div class="tita-note">Q1–43 are TITA. Only Q44 is MCQ.</div>
+    </div>
+    <div class="legend">
+      <div class="palette-title">Status Legend</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#9ca3af"></div>Not Visited</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Not Answered</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#16a34a"></div>Answered</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Marked for Review</div>
+    </div>
+    <div class="palette-title">Jump to Segment</div>
+    <div class="sect-jump">
+      <button class="sj-btn" onclick="goToQ(1)">§1 Q1</button>
+      <button class="sj-btn" onclick="goToQ(11)">§2 Q11</button>
+      <button class="sj-btn" onclick="goToQ(35)">§3 Q35</button>
+    </div>
+    <div class="palette-title">Question Palette</div>
+    <div class="palette-grid" id="palette"></div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-left">
+    <button class="btn btn-prev" onclick="navigate(-1)">◀ Prev</button>
+    <button class="btn btn-mark" onclick="markForReview()">⚑ Mark</button>
+    <button class="btn btn-clear" onclick="clearResponse()">✕ Clear</button>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-save" onclick="saveAndNext()">Save &amp; Next ▶</button>
+    <button class="btn btn-submit" onclick="showConfirmSubmit()">Submit Test</button>
+  </div>
+</div>
+
+<!-- SUBMISSION MESSAGE -->
+<div class="overlay" id="submit-msg-overlay">
+  <div style="background:white;border-radius:16px;padding:40px 48px;text-align:center;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:48px;margin-bottom:16px;">✅</div>
+    <div style="font-size:20px;font-weight:700;color:var(--navy);margin-bottom:10px;">Responses Submitted!</div>
+    <div style="font-size:13.5px;color:var(--subtext);line-height:1.6;">Your answers have been recorded.<br>Loading your results…</div>
+    <div style="margin-top:20px;height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;"><div style="height:100%;background:var(--green);border-radius:2px;animation:progbar 2.4s linear forwards;"></div></div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3>Submit Test?</h3>
+    <p>You are about to submit the Percentages practice test.</p>
+    <div class="confirm-stats" id="confirm-stats"></div>
+    <div class="confirm-btns">
+      <button class="btn btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-confirm-sub" onclick="submitSection()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIME UP -->
+<div class="overlay" id="timeup-overlay">
+  <div class="timeup-box">
+    <h2>⏱ Time's Up!</h2>
+    <p>40 minutes elapsed. Your responses are being submitted.</p>
+    <button class="btn btn-submit" style="width:100%;" onclick="submitSection()">View Results</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="overlay" id="results-overlay">
+  <div class="modal-box">
+    <div class="modal-title">📊 Percentages: Practice Test</div>
+    <div class="modal-sub">Results &amp; Review</div>
+    <div class="student-strip" id="student-strip"></div>
+    <div class="score-grid" id="score-cards"></div>
+    <div class="sep"></div>
+    <div class="analysis-title">Segment-wise Analysis</div>
+    <table class="atbl" id="analysis-table"></table>
+    <div class="sep"></div>
+    <div class="analysis-title">Question-wise Review</div>
+    <div class="rtabs">
+      <button class="rtab active" onclick="filterReview('all',this)">All (44)</button>
+      <button class="rtab" onclick="filterReview('correct',this)">Correct</button>
+      <button class="rtab" onclick="filterReview('wrong',this)">Wrong</button>
+      <button class="rtab" onclick="filterReview('skip',this)">Skipped</button>
+    </div>
+    <div id="review-list"></div>
+    <button class="btn-review-close" onclick="closeResults()">Close &amp; Review Questions</button>
+  </div>
+</div>
+
+<script>
+// ══ GOOGLE FORMS CONFIG ══
+const GF_CONFIG = {
+  formUrl:'https://docs.google.com/forms/d/e/1FAIpQLSfWlkD8s09vzZBbT25HdHbbCnLg36E2W_qc790OUibG8kNY4A/formResponse',
+  fields:{
+    studentName:'entry.821793197',
+    center     :'entry.718554192',
+    batch      :'entry.1677067231',
+    totalScore :'entry.394084461',
+    correct    :'entry.221833569',
+    incorrect  :'entry.1128942083',
+    skipped    :'entry.643971374',
+    timeTaken  :'entry.1634701790',
+    responses  :'entry.2004208374',
+  }
+};
+
+// ══ QUESTIONS ══
+const QUESTIONS = [
+  // ── SEGMENT 1: Basic Percentages ──
+  {id:1,sec:1,mcq:false,tol:0,
+   text:'Find the value: <strong>37.5%</strong> of <strong>8888</strong>',
+   answer:'3333',hint:'37.5% = 3/8. Divide 8888 by 8, then multiply by 3.'},
+  {id:2,sec:1,mcq:false,tol:0,
+   text:'Find the value: <strong>66.67%</strong> of <strong>9600</strong>',
+   answer:'6400',hint:'66.67% = 2/3. Divide 9600 by 3, multiply by 2.'},
+  {id:3,sec:1,mcq:false,tol:0,
+   text:'Find the value: <strong>22.5%</strong> of <strong>8000</strong>',
+   answer:'1800',hint:'22.5% = 9/40. Or split: 20% + 2.5%.'},
+  {id:4,sec:1,mcq:false,tol:0.1,
+   text:'<strong>___% of 225 is 15.</strong> Find the percentage.',
+   answer:'6.67',hint:'% = (15 ÷ 225) × 100. Simplify 15/225 = 1/15.'},
+  {id:5,sec:1,mcq:false,tol:0,
+   text:'<strong>___% of 4096 is 512.</strong> Find the percentage.',
+   answer:'12.5',hint:'% = (512 ÷ 4096) × 100 = (1/8) × 100 = 12.5%.'},
+  {id:6,sec:1,mcq:false,tol:0.1,
+   text:'<strong>___% of 2400 is 1600.</strong> Find the percentage.',
+   answer:'66.66',hint:'% = (1600 ÷ 2400) × 100 = (2/3) × 100.'},
+  {id:7,sec:1,mcq:false,tol:0,
+   text:'<strong>5.26% of ___ is 100.</strong> Find the base value.',
+   answer:'1900',hint:'5.26% ≈ 1/19. So base = 100 × 19 = 1900.'},
+  {id:8,sec:1,mcq:false,tol:0,
+   text:'<strong>22.22% of ___ is 90.</strong> Find the base value.',
+   answer:'405',hint:'22.22% = 2/9. Base = 90 × (9/2) = 405.'},
+  {id:9,sec:1,mcq:false,tol:0,
+   text:'<strong>43.75% of ___ is 77.</strong> Find the base value.',
+   answer:'176',hint:'43.75% = 7/16. Base = 77 × (16/7) = 176.'},
+  {id:10,sec:1,mcq:false,tol:0,
+   text:'<strong>18.18% of ___ is 40004.</strong> Find the base value.',
+   answer:'220022',hint:'18.18% = 2/11. Base = 40004 × (11/2) = 220022.'},
+
+  // ── SEGMENT 2: Percentage Change ──
+  {id:11,sec:2,mcq:false,tol:0,
+   row:[['400','+ 120','?','?']],ask:'pct',
+   text:'Initial value = 400. Change = increase by 120. <strong>Find the % change.</strong>',
+   answer:'30',hint:'% change = (120 ÷ 400) × 100 = 30%.'},
+  {id:12,sec:2,mcq:false,tol:0,
+   row:[['800','− 600','?','?']],ask:'pct',
+   text:'Initial value = 800. Change = decrease by 600. <strong>Find the % change.</strong>',
+   answer:'75',hint:'% change = (600 ÷ 800) × 100 = 75%.'},
+  {id:13,sec:2,mcq:false,tol:0,
+   row:[['600','+ 1200','?','?']],ask:'pct',
+   text:'Initial value = 600. Change = increase by 1200. <strong>Find the % change.</strong>',
+   answer:'200',hint:'% change = (1200 ÷ 600) × 100 = 200%.'},
+  {id:14,sec:2,mcq:false,tol:0.1,
+   row:[['900','− 100','?','?']],ask:'pct',
+   text:'Initial value = 900. Change = decrease by 100. <strong>Find the % change.</strong>',
+   answer:'11.11',hint:'% change = (100 ÷ 900) × 100 = 1/9 × 100 ≈ 11.11%.'},
+  {id:15,sec:2,mcq:false,tol:0,
+   row:[['300','?','15% ↑','?']],ask:'final',
+   text:'Initial value = 300. Increases by 15%. <strong>Find the final value.</strong>',
+   answer:'345',hint:'Final = 300 × 1.15 = 345.'},
+  {id:16,sec:2,mcq:false,tol:0,
+   row:[['1800','?','22.22% ↓','?']],ask:'final',
+   text:'Initial value = 1800. Decreases by 22.22%. <strong>Find the final value.</strong>',
+   answer:'1400',hint:'22.22% = 2/9. Decrease = 400. Final = 1800 − 400 = 1400.'},
+  {id:17,sec:2,mcq:false,tol:0,
+   row:[['1400','?','114.28% ↑','?']],ask:'final',
+   text:'Initial value = 1400. Increases by 114.28%. <strong>Find the final value.</strong>',
+   answer:'3000',hint:'114.28% = 8/7. Increase = 1400 × 8/7 = 1600. Final = 3000.'},
+  {id:18,sec:2,mcq:false,tol:0,
+   row:[['6600','?','93.33% ↓','?']],ask:'final',
+   text:'Initial value = 6600. Decreases by 93.33%. <strong>Find the final value.</strong>',
+   answer:'440',hint:'93.33% ≈ 14/15. Remaining = 1/15. Final = 6600/15 = 440.'},
+  {id:19,sec:2,mcq:false,tol:0,
+   row:[['2500','?','?','800']],ask:'pct',
+   text:'Initial value = 2500. Final value = 800. <strong>Find the % decrease.</strong> (Enter the number only, e.g. "68" for 68%)',
+   answer:'68',hint:'% change = (1700 ÷ 2500) × 100 = 68% decrease.'},
+  {id:20,sec:2,mcq:false,tol:0.1,
+   row:[['2400','?','?','3200']],ask:'pct',
+   text:'Initial value = 2400. Final value = 3200. <strong>Find the % increase.</strong> (Enter the number only)',
+   answer:'33.33',hint:'% change = (800 ÷ 2400) × 100 = 1/3 × 100 ≈ 33.33%.'},
+  {id:21,sec:2,mcq:false,tol:0.1,
+   row:[['990','?','?','1100']],ask:'pct',
+   text:'Initial value = 990. Final value = 1100. <strong>Find the % increase.</strong> (Enter the number only)',
+   answer:'11.11',hint:'% change = (110 ÷ 990) × 100 = 1/9 × 100 ≈ 11.11%.'},
+  {id:22,sec:2,mcq:false,tol:0,
+   row:[['5600','?','?','4900']],ask:'pct',
+   text:'Initial value = 5600. Final value = 4900. <strong>Find the % decrease.</strong> (Enter the number only)',
+   answer:'12.5',hint:'% change = (700 ÷ 5600) × 100 = 1/8 × 100 = 12.5%.'},
+  {id:23,sec:2,mcq:false,tol:0,
+   row:[['?','+ 120','240% ↑','?']],ask:'init',
+   text:'A value increases by 120, representing a 240% increase. <strong>Find the initial value.</strong>',
+   answer:'50',hint:'Initial = Change ÷ (% ÷ 100) = 120 ÷ 2.4 = 50.'},
+  {id:24,sec:2,mcq:false,tol:0,
+   row:[['?','− 300','25% ↓','?']],ask:'init',
+   text:'A value decreases by 300, representing a 25% decrease. <strong>Find the initial value.</strong>',
+   answer:'1200',hint:'Initial = 300 ÷ 0.25 = 1200.'},
+  {id:25,sec:2,mcq:false,tol:0,
+   row:[['?','− 100','5.88% ↓','?']],ask:'init',
+   text:'A value decreases by 100, representing a 5.88% decrease. <strong>Find the initial value.</strong>',
+   answer:'1700',hint:'5.88% ≈ 1/17. Initial = 100 × 17 = 1700.'},
+  {id:26,sec:2,mcq:false,tol:0,
+   row:[['?','+ 200','5.26% ↑','?']],ask:'init',
+   text:'A value increases by 200, representing a 5.26% increase. <strong>Find the initial value.</strong>',
+   answer:'3800',hint:'5.26% ≈ 1/19. Initial = 200 × 19 = 3800.'},
+  {id:27,sec:2,mcq:false,tol:0,
+   row:[['?','+ 200','?','2000']],ask:'init',
+   text:'A value increases by 200 and becomes 2000. <strong>Find the initial value.</strong>',
+   answer:'1800',hint:'Initial = Final − Increase = 2000 − 200 = 1800.'},
+  {id:28,sec:2,mcq:false,tol:0,
+   row:[['?','− 143','?','1573']],ask:'init',
+   text:'A value decreases by 143 and becomes 1573. <strong>Find the initial value.</strong>',
+   answer:'1716',hint:'Initial = Final + Decrease = 1573 + 143 = 1716.'},
+  {id:29,sec:2,mcq:false,tol:0,
+   row:[['?','− 150','?','900']],ask:'init',
+   text:'A value decreases by 150 and becomes 900. <strong>Find the initial value.</strong>',
+   answer:'1050',hint:'Initial = 900 + 150 = 1050.'},
+  {id:30,sec:2,mcq:false,tol:0,
+   row:[['?','+ 180','?','1800']],ask:'init',
+   text:'A value increases by 180 and becomes 1800. <strong>Find the initial value.</strong>',
+   answer:'1620',hint:'Initial = 1800 − 180 = 1620.'},
+  {id:31,sec:2,mcq:false,tol:0,
+   row:[['?','?','110% ↑','1890']],ask:'init',
+   text:'After a 110% increase, a value becomes 1890. <strong>Find the initial value.</strong>',
+   answer:'900',hint:'Final = Initial × 2.1. Initial = 1890 ÷ 2.1 = 900.'},
+  {id:32,sec:2,mcq:false,tol:0,
+   row:[['?','?','10% ↓','990']],ask:'init',
+   text:'After a 10% decrease, a value becomes 990. <strong>Find the initial value.</strong>',
+   answer:'1100',hint:'Final = Initial × 0.9. Initial = 990 ÷ 0.9 = 1100.'},
+  {id:33,sec:2,mcq:false,tol:0,
+   row:[['?','?','5.88% ↑','324']],ask:'init',
+   text:'After a 5.88% increase, a value becomes 324. <strong>Find the initial value.</strong>',
+   answer:'306',hint:'5.88% = 1/17. Final = Initial × 18/17. Initial = 324 × 17/18 = 306.'},
+  {id:34,sec:2,mcq:false,tol:0,
+   row:[['?','?','5.26% ↓','324']],ask:'init',
+   text:'After a 5.26% decrease, a value becomes 324. <strong>Find the initial value.</strong>',
+   answer:'342',hint:'5.26% = 1/19. Final = Initial × 18/19. Initial = 324 × 19/18 = 342.'},
+
+  // ── SEGMENT 3: Successive % Change ──
+  {id:35,sec:3,mcq:false,tol:0,
+   steps:['8.33% ↑','7.69% ↓','23% ↑'],dir:'increase',
+   text:'Find the net % change. Enter the absolute value.',
+   answer:'23',hint:'8.33%=1/12, 7.69%=1/13. The first two cancel. Net = 23% increase.'},
+  {id:36,sec:3,mcq:false,tol:0.1,
+   steps:['25% ↑','50% ↑','11.11% ↓'],dir:'increase',
+   text:'Find the net % change. Enter the absolute value.',
+   answer:'66.67',hint:'25%=1/4, 50%=1/2, 11.11%=1/9. Use fraction method: ×(5/4)×(3/2)×(8/9).'},
+  {id:37,sec:3,mcq:false,tol:0,
+   steps:['75% ↓','80% ↓','100% ↑'],dir:'decrease',
+   text:'Find the net % change. Enter the absolute value. (Net result is a <strong>decrease</strong>.)',
+   answer:'90',hint:'Multipliers: ×0.25 × 0.2 × 2 = 0.1. Net = 90% decrease.'},
+  {id:38,sec:3,mcq:false,tol:0,
+   steps:['20% ↑','25% ↓','20% ↑','25% ↓'],dir:'decrease',
+   text:'Find the net % change. Enter the absolute value. (Net result is a <strong>decrease</strong>.)',
+   answer:'19',hint:'Multipliers: (1.2 × 0.75)² = (0.9)² = 0.81. Net = 19% decrease.'},
+  {id:39,sec:3,mcq:false,tol:0.1,
+   steps:['10% ↑','10% ↑','10% ↑'],dir:'increase',
+   text:'Find the net % change. Enter the absolute value.',
+   answer:'33.1',hint:'1.1³ = 1.331. Net = 33.1% increase.'},
+  {id:40,sec:3,mcq:false,tol:0.1,
+   steps:['20% ↓','20% ↓','20% ↓'],dir:'decrease',
+   text:'Find the net % change. Enter the absolute value. (Net result is a <strong>decrease</strong>.)',
+   answer:'48.8',hint:'0.8³ = 0.512. Net = 48.8% decrease.'},
+  {id:41,sec:3,mcq:false,tol:0,
+   steps:['137.235% ↑','213.52% ↑','100% ↓'],dir:'decrease',
+   text:'Find the net % change. Enter the absolute value. (Net result is a <strong>decrease</strong>.)',
+   answer:'100',hint:'A 100% decrease = ×0 = total loss, regardless of prior increases.'},
+  {id:42,sec:3,mcq:false,tol:0,
+   steps:['200% ↑','250% ↑'],dir:'increase',
+   text:'Find the net % change. Enter the absolute value.',
+   answer:'950',hint:'×3 × 3.5 = ×10.5. Net = 950% increase.'},
+  {id:43,sec:3,mcq:false,tol:0,
+   steps:['50% ↓','50% ↓','50% ↓'],dir:'decrease',
+   text:'Find the net % change. Enter the absolute value. (Net result is a <strong>decrease</strong>.)',
+   answer:'87.5',hint:'0.5³ = 0.125. Net = 87.5% decrease.'},
+  {id:44,sec:3,mcq:true,
+   text:'Which of the following successive discounts gives the <strong>largest net discount</strong>?',
+   options:[
+     'a)  25%, 25%, 25%, 25%',
+     'b)  20%, 25%, 25%, 30%',
+     'c)  10%, 25%, 25%, 40%',
+     'd)  10%, 20%, 30%, 40%'
+   ],answer:3,
+   hint:'All four options sum to 100%. When the sum is fixed, spreads further apart from each other give the largest net discount.'},
+];
+
+// ══ STATE ══
+const TOTAL_Q=44, TOTAL_SECS=60*60;
+let currentQ=1, timeLeft=TOTAL_SECS, timerInterval=null, submitted=false;
+let studentInfo={name:'',center:'',batch:''};
+const state={};
+for(let i=1;i<=TOTAL_Q;i++) state[i]={status:'nv',response:null};
+state[1].status='na';
+
+// ══ ENTRY ══
+function startTest(){
+  const name=document.getElementById('inp-name').value.trim();
+  const center=document.getElementById('inp-center').value;
+  const batch=document.getElementById('inp-batch').value.trim();
+  const errEl=document.getElementById('entry-error');
+  if(!name||!center||!batch){errEl.textContent='⚠ Please fill in all fields before beginning.';return;}
+  errEl.textContent='';
+  studentInfo={name,center,batch};
+  document.getElementById('entry-overlay').style.display='none';
+  document.getElementById('header-student').textContent='👤 '+name;
+  startTimer();
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  ['inp-name','inp-batch'].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')startTest();});
+  });
+});
+
+// ══ TIMER ══
+function startTimer(){
+  timerInterval=setInterval(()=>{
+    if(submitted){clearInterval(timerInterval);return;}
+    timeLeft--;updateTimerDisplay();
+    if(timeLeft<=0){clearInterval(timerInterval);document.getElementById('timeup-overlay').classList.add('show');}
+  },1000);
+}
+function updateTimerDisplay(){
+  const m=String(Math.floor(timeLeft/60)).padStart(2,'0'),s=String(timeLeft%60).padStart(2,'0');
+  const el=document.getElementById('timer');
+  el.textContent=`${m}:${s}`;el.className='timer';
+  if(timeLeft<=600&&timeLeft>120)el.classList.add('warning');
+  else if(timeLeft<=120)el.classList.add('danger');
+}
+function formatTimeTaken(){
+  const used=TOTAL_SECS-timeLeft;
+  return String(Math.floor(used/60)).padStart(2,'0')+':'+String(used%60).padStart(2,'0');
+}
+
+// ══ RENDER ══
+const secLabel=['','Basic %','% Change','Successive %'];
+const secBadge=['','badge-s1','badge-s2','badge-s3'];
+
+function renderQuestion(qid){
+  const q=QUESTIONS[qid-1],s=state[qid];
+  const typeBadge=q.mcq?'<span class="badge badge-mcq">MCQ · −1 wrong</span>':'<span class="badge badge-tita">TITA · No negative</span>';
+  let html=`<div class="q-meta">
+    <span class="q-num-label">Q.${q.id}</span>
+    <span class="badge ${secBadge[q.sec]}">${secLabel[q.sec]}</span>
+    ${typeBadge}
+  </div>`;
+
+  // Context box for Segment 2
+  if(q.sec===2&&q.row){
+    html+=`<div class="ctx-box"><div class="ctx-title">📋 Table Row</div>
+      <table class="ctx-table">
+        <tr><th>Initial Value</th><th>Change in Value</th><th>Change in %</th><th>Final Value</th></tr>
+        <tr>${q.row[0].map(v=>`<td class="${v==='?'?'missing':'given'}">${v==='?'?'?':v}</td>`).join('')}</tr>
+      </table></div>`;
+  }
+
+  // Context box for Segment 3
+  if(q.sec===3&&q.steps){
+    const dirLabel=q.dir==='increase'?'<span style="color:var(--green);font-weight:600">↑ Net Increase</span>':'<span style="color:var(--red);font-weight:600">↓ Net Decrease</span>';
+    html+=`<div class="chain-box"><div class="chain-title">🔗 Successive Changes ${q.dir?'· '+dirLabel:''}</div>
+      <div class="chain-steps">`;
+    q.steps.forEach((step,i)=>{
+      html+=`<span class="chain-step">${step}</span>`;
+      if(i<q.steps.length-1) html+=`<span class="chain-arrow">→</span>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  html+=`<div class="instr">📌 ${q.mcq?'Select the correct option. −1 for wrong answer.':'Type In The Answer. No negative marking for TITA.'}</div>`;
+  html+=`<div class="q-text">${q.text}</div>`;
+
+  if(q.mcq){
+    const L=['A','B','C','D'];
+    html+='<ul class="options">'+q.options.map((opt,i)=>
+      `<li class="option${s.response===i?' selected':''}" data-idx="${i}">
+        <div class="opt-radio"><div class="opt-dot"></div></div>
+        <span><span class="opt-label">${L[i]}.</span> ${opt}</span>
+      </li>`
+    ).join('')+'</ul>';
+  } else {
+    html+=`<div class="tita-wrap">
+      <div class="tita-label">Your Answer</div>
+      <input class="tita-input" id="tita-input" type="text" inputmode="decimal" maxlength="10"
+        placeholder="—" value="${s.response!==null?s.response:''}">
+      <div class="tita-hint">Enter a number (digits and decimal point only)</div>
+    </div>`;
+  }
+
+
+
+  document.getElementById('question-inner').innerHTML=html;
+  document.getElementById('cur-q-num').textContent=qid;
+
+  // Update tabs
+  ['tab1','tab2','tab3'].forEach((id,i)=>{
+    document.getElementById(id).classList.toggle('active',q.sec===i+1);
+  });
+
+  if(q.mcq){
+    document.querySelectorAll('.option').forEach(el=>{
+      el.addEventListener('click',()=>{
+        state[currentQ].response=parseInt(el.dataset.idx);
+        state[currentQ].status=state[currentQ].status==='mrv'?'amrv':'ans';
+        renderQuestion(currentQ);updatePalette();
+      });
+    });
+  } else {
+    const inp=document.getElementById('tita-input');
+    inp.addEventListener('input',()=>{
+      let v=inp.value.replace(/[^0-9.]/g,'');
+      // Allow only one decimal point
+      const parts=v.split('.');
+      if(parts.length>2)v=parts[0]+'.'+parts.slice(1).join('');
+      inp.value=v;
+      state[currentQ].response=v||null;
+      state[currentQ].status=v?(state[currentQ].status==='mrv'?'amrv':'ans'):'na';
+      updatePalette();
+    });
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')saveAndNext();});
+    inp.focus();
+  }
+  updatePalette();updateSectJump();
+}
+
+function updateSectJump(){
+  document.querySelectorAll('.sj-btn').forEach((btn,i)=>{
+    const starts=[1,11,35],ends=[10,34,44];
+    btn.classList.toggle('active',currentQ>=starts[i]&&currentQ<=ends[i]);
+  });
+}
+
+// ══ PALETTE ══
+function updatePalette(){
+  document.getElementById('palette').innerHTML=Array.from({length:TOTAL_Q},(_,i)=>{
+    const n=i+1,st=state[n].status;
+    const cls={nv:'p-nv',na:'p-na',ans:'p-ans',mrv:'p-mrv',amrv:'p-amrv'}[st]||'p-nv';
+    return `<button class="pb ${cls}${n===currentQ?' p-current':''}" onclick="goToQ(${n})">${n}</button>`;
+  }).join('');
+}
+
+// ══ NAVIGATION ══
+function goToQ(qid){
+  if(qid<1||qid>TOTAL_Q)return;
+  if(state[currentQ].status==='nv')state[currentQ].status='na';
+  currentQ=qid;
+  if(state[currentQ].status==='nv')state[currentQ].status='na';
+  renderQuestion(currentQ);
+}
+function navigate(dir){const n=currentQ+dir;if(n>=1&&n<=TOTAL_Q){if(state[currentQ].status==='nv')state[currentQ].status='na';goToQ(n);}}
+function saveAndNext(){
+  const s=state[currentQ];
+  s.status=(s.response!==null&&s.response!=='')?(s.status==='mrv'||s.status==='amrv'?'amrv':'ans'):'na';
+  navigate(1);
+}
+function markForReview(){
+  const s=state[currentQ];
+  s.status=(s.response!==null&&s.response!=='')?'amrv':'mrv';
+  updatePalette();navigate(1);
+}
+function clearResponse(){state[currentQ].response=null;state[currentQ].status='na';renderQuestion(currentQ);updatePalette();}
+
+// ══ SUBMIT ══
+function showConfirmSubmit(){
+  let ans=0,na=0,mrv=0;
+  for(let i=1;i<=TOTAL_Q;i++){
+    const st=state[i].status;
+    if(st==='ans'||st==='amrv')ans++;else if(st==='mrv')mrv++;else na++;
+  }
+  document.getElementById('confirm-stats').innerHTML=
+    `<div class="cs-row"><span>✅ Answered</span><span><strong>${ans}</strong></span></div>
+     <div class="cs-row"><span>❌ Not Answered</span><span><strong>${na}</strong></span></div>
+     <div class="cs-row"><span>⚑ Marked (unanswered)</span><span><strong>${mrv}</strong></span></div>`;
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('show');}
+function submitSection(){
+  if(submitted)return;submitted=true;clearInterval(timerInterval);
+  document.getElementById('confirm-overlay').classList.remove('show');
+  document.getElementById('timeup-overlay').classList.remove('show');
+  document.getElementById('submit-msg-overlay').classList.add('show');
+  setTimeout(()=>{
+    document.getElementById('submit-msg-overlay').classList.remove('show');
+    showResults();
+  },2500);
+}
+
+// ══ EVALUATE ══
+function evaluateQ(q){
+  const resp=state[q.id].response;
+  const has=resp!==null&&resp!==undefined&&resp!=='';
+  if(!has)return{result:'skip',marks:0};
+  if(q.mcq){
+    return parseInt(resp)===q.answer?{result:'correct',marks:3}:{result:'wrong',marks:-1};
+  }
+  const r=parseFloat(resp);
+  const a=parseFloat(q.answer);
+  const tol=q.tol||0;
+  if(!isNaN(r)&&!isNaN(a)&&Math.abs(r-a)<=tol+0.005){
+    return{result:'correct',marks:3};
+  }
+  return{result:'wrong',marks:0};
+}
+
+// ══ RESULTS ══
+function showResults(){
+  let total=0,correct=0,wrong=0,skip=0;
+  const secData=[{q:0,c:0,w:0,s:0,m:0},{q:0,c:0,w:0,s:0,m:0},{q:0,c:0,w:0,s:0,m:0}];
+  QUESTIONS.forEach(q=>{
+    const{result,marks}=evaluateQ(q);total+=marks;
+    const sd=secData[q.sec-1];sd.q++;sd.m+=marks;
+    if(result==='correct'){correct++;sd.c++;}
+    else if(result==='wrong'){wrong++;sd.w++;}
+    else{skip++;sd.s++;}
+  });
+  const acc=correct+wrong>0?Math.round(correct/(correct+wrong)*100):0;
+
+  document.getElementById('student-strip').innerHTML=
+    `<span>👤 <strong>${studentInfo.name||'—'}</strong></span>
+     <span>Center: <strong>${studentInfo.center||'—'}</strong></span>
+     <span>Batch: <strong>${studentInfo.batch||'—'}</strong></span>
+     <span>Time: <strong>${formatTimeTaken()}</strong></span>`;
+
+  submitToGoogleForms({total,correct,wrong,skip});
+
+  document.getElementById('score-cards').innerHTML=
+    `<div class="score-card"><div class="sc-label">Total Score</div><div class="sc-val v-blue">${total}</div><div style="font-size:10px;color:#888;margin-top:4px;">out of 132</div></div>
+     <div class="score-card"><div class="sc-label">Accuracy</div><div class="sc-val v-gold">${acc}%</div><div style="font-size:10px;color:#888;margin-top:4px;">${correct} of ${correct+wrong}</div></div>
+     <div class="score-card"><div class="sc-label">Correct</div><div class="sc-val v-green">+${correct*3}</div><div style="font-size:10px;color:#888;margin-top:4px;">${correct} questions</div></div>
+     <div class="score-card"><div class="sc-label">Skipped</div><div class="sc-val" style="color:var(--gray)">${skip}</div><div style="font-size:10px;color:#888;margin-top:4px;">no penalty</div></div>`;
+
+  const secNames=['Basic Percentages','Percentage Change','Successive % Change'];
+  const secMax=[30,72,30];
+  document.getElementById('analysis-table').innerHTML=
+    `<tr><th>Segment</th><th>Qs</th><th>Attempted</th><th>Correct</th><th>Wrong</th><th>Skipped</th><th>Score</th></tr>`+
+    secData.map((sd,i)=>
+      `<tr><td><strong>${secNames[i]}</strong></td><td>${sd.q}</td><td>${sd.c+sd.w}</td><td>${sd.c}</td><td>${sd.w}</td><td>${sd.s}</td>
+       <td style="font-weight:700;color:${sd.m>=0?'#16a34a':'#b91c1c'}">${sd.m}</td></tr>`
+    ).join('')+
+    `<tr style="background:#e0eaff"><td><strong>TOTAL</strong></td><td><strong>44</strong></td><td><strong>${correct+wrong}</strong></td><td><strong>${correct}</strong></td><td><strong>${wrong}</strong></td><td><strong>${skip}</strong></td>
+     <td style="font-weight:700;font-size:15px;color:${total>=0?'#0f2556':'#b91c1c'}">${total}</td></tr>`;
+
+  renderReviewList('all');
+  document.getElementById('results-overlay').classList.add('show');
+}
+
+function renderReviewList(filter){
+  const L=['A','B','C','D'];
+  let html='';
+  QUESTIONS.forEach(q=>{
+    const{result}=evaluateQ(q);
+    if(filter!=='all'&&result!==filter)return;
+    const resp=state[q.id].response;
+    const statusHtml=result==='correct'?`<span class="rq-status correct">✓ Correct (+3)</span>`:
+      result==='wrong'?(q.mcq?`<span class="rq-status wrong">✗ Wrong (−1)</span>`:`<span class="rq-status wrong">✗ Wrong (0)</span>`):
+      `<span class="rq-status skip">— Skipped (0)</span>`;
+    const secColors=['','background:#e8f5ee;color:#1a7a3c','background:#e0eaff;color:#0f2556','background:#f3e8ff;color:#7c3aed'];
+    let ansInfo='';
+    if(q.mcq){
+      const yr=resp!==null?`${L[resp]}. ${q.options[resp]}`:'Not attempted';
+      const cr=`${L[q.answer]}. ${q.options[q.answer]}`;
+      ansInfo=`<div class="rq-ans"><span class="rq-your">Your: ${yr}</span><br><span class="rq-correct">✓ Correct: ${cr}</span></div>`;
+    } else {
+      ansInfo=`<div class="rq-ans"><span class="rq-your">Your: <strong>${resp||'Not attempted'}</strong></span>&nbsp;&nbsp;<span class="rq-correct">✓ Correct: <strong>${q.answer}</strong></span></div>`;
+    }
+    html+=`<div class="review-q">
+      <div class="rq-header">
+        <span class="rq-num">Q.${q.id}</span>
+        <span style="font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;${secColors[q.sec]}">${secLabel[q.sec]}</span>
+        ${statusHtml}
+      </div>
+      <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:4px;">${q.text.replace(/<[^>]+>/g,'').substring(0,100)}...</div>
+      ${ansInfo}
+    </div>`;
+  });
+  if(!html)html='<div style="padding:20px;text-align:center;color:#999;">No questions in this category.</div>';
+  document.getElementById('review-list').innerHTML=html;
+}
+function filterReview(f,btn){document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderReviewList(f);}
+function closeResults(){document.getElementById('results-overlay').classList.remove('show');}
+
+// ══ GOOGLE FORMS ══
+function showToast(msg,isError=false){
+  const t=document.getElementById('submit-toast');
+  t.textContent=msg;t.className='submit-toast'+(isError?' error':'')+' show';
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+function buildResponseString(){
+  return QUESTIONS.map(q=>{
+    const resp=state[q.id].response;
+    const has=resp!==null&&resp!==undefined&&resp!=='';
+    if(!has)return`Q${q.id}:–`;
+    const{result}=evaluateQ(q);
+    return`Q${q.id}:${resp}(${result==='correct'?'✓':'✗'})`;
+  }).join('  ');
+}
+async function submitToGoogleForms(scoreData){
+  if(GF_CONFIG.formUrl.includes('YOUR')){console.warn('Form not configured.');return;}
+  const f=GF_CONFIG.fields,params=new URLSearchParams();
+  params.append(f.studentName,studentInfo.name);
+  params.append(f.center,studentInfo.center);
+  params.append(f.batch,studentInfo.batch);
+  params.append(f.totalScore,scoreData.total);
+  params.append(f.correct,scoreData.correct);
+  params.append(f.incorrect,scoreData.wrong);
+  params.append(f.skipped,scoreData.skip);
+  params.append(f.timeTaken,formatTimeTaken());
+  params.append(f.responses,buildResponseString());
+  try{
+    await fetch(GF_CONFIG.formUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params.toString()});
+    showToast('✓ Responses submitted successfully');
+  }catch(e){showToast('⚠ Could not reach Google Forms',true);}
+}
+
+// ══ INIT ══
+renderQuestion(1);updatePalette();
+</script>
+</body>
+</html>
