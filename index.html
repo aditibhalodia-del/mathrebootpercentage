@@ -330,7 +330,10 @@
       <button class="rtab" onclick="filterReview('skip',this)">Skipped</button>
     </div>
     <div id="review-list"></div>
-    <button class="btn-review-close" onclick="closeResults()">Close &amp; Review Questions</button>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn-review-close" style="flex:1" onclick="generateAnswerPDF()">📄 Download Answer Key (PDF)</button>
+      <button class="btn-review-close" style="flex:1;background:#64748b;" onclick="closeResults()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -823,6 +826,85 @@ function renderReviewList(filter){
 }
 function filterReview(f,btn){document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderReviewList(f);}
 function closeResults(){document.getElementById('results-overlay').classList.remove('show');}
+
+// ══ GENERATE ANSWER KEY PDF ══
+function generateAnswerPDF(){
+  const L=['A','B','C','D'];
+  const secNames=['Basic Percentages','Percentage Change','Successive % Change'];
+  let currentSec=0;
+  let body='';
+
+  QUESTIONS.forEach(q=>{
+    if(q.sec!==currentSec){
+      currentSec=q.sec;
+      body+=`<div class="sec-title">Segment ${q.sec}: ${secNames[q.sec-1]}</div>`;
+    }
+    body+=`<div class="qblock">`;
+    body+=`<div class="qhead"><span class="qnum">Q.${q.id}</span>`;
+
+    // Segment 2 table context
+    if(q.sec===2&&q.row){
+      body+=`<table class="ctx"><tr><th>Initial</th><th>Change</th><th>% Change</th><th>Final</th></tr><tr>`;
+      q.row[0].forEach(v=>{body+=`<td class="${v==='?'?'miss':''}">${v}</td>`;});
+      body+=`</tr></table>`;
+    }
+
+    // Segment 3 chain
+    if(q.sec===3&&q.steps){
+      body+=`<div class="chain">${q.steps.join(' → ')}</div>`;
+    }
+
+    body+=`</div><div class="qtext">${q.text.replace(/<[^>]+>/g,'')}</div>`;
+
+    if(q.mcq){
+      body+=`<div class="opts">`;
+      q.options.forEach((opt,i)=>{
+        const correct=i===q.answer;
+        body+=`<div class="opt${correct?' correct':''}">${L[i]}. ${opt.replace(/<[^>]+>/g,'')}</div>`;
+      });
+      body+=`</div>`;
+      body+=`<div class="ans">✓ Answer: ${L[q.answer]}</div>`;
+    } else {
+      body+=`<div class="ans">✓ Answer: ${q.answer}</div>`;
+    }
+    body+=`</div>`;
+  });
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>QA Percentages – Answer Key</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;font-size:12px;color:#000;padding:24px 28px}
+    h1{font-size:17px;font-weight:700;color:#0f2556;margin-bottom:4px}
+    .meta{font-size:10.5px;color:#555;margin-bottom:6px}
+    .note{font-size:10px;color:#888;margin-bottom:18px;font-style:italic}
+    .sec-title{font-size:13px;font-weight:700;color:#0f2556;margin:18px 0 8px;border-bottom:1.5px solid #0f2556;padding-bottom:3px}
+    .qblock{margin-bottom:9px;padding:8px 10px;border:1px solid #ddd;border-radius:4px;page-break-inside:avoid}
+    .qhead{margin-bottom:3px}
+    .qnum{font-weight:700;color:#2851a3;margin-right:6px}
+    .qtext{font-size:11.5px;margin:4px 0;color:#111}
+    .ans{font-size:12px;font-weight:700;color:#1a7a3c;margin-top:5px}
+    .opts{margin:4px 0 2px 10px}
+    .opt{font-size:11px;color:#555;margin:1px 0}
+    .opt.correct{color:#1a7a3c;font-weight:700}
+    table.ctx{border-collapse:collapse;font-size:11px;margin:5px 0}
+    table.ctx th{background:#0f2556;color:white;padding:3px 8px;font-size:10.5px}
+    table.ctx td{border:1px solid #ccc;padding:3px 8px}
+    table.ctx td.miss{background:#fff8e1;font-weight:700;color:#b07000}
+    .chain{font-size:11px;color:#7c3aed;font-weight:600;margin:4px 0}
+    @media print{.qblock{break-inside:avoid}}
+  </style></head><body>
+  <h1>QA – Percentages: Practice Test · Answer Key</h1>
+  <div class="meta">Student: <strong>${studentInfo.name||'—'}</strong> &nbsp;|&nbsp; Center: <strong>${studentInfo.center||'—'}</strong> &nbsp;|&nbsp; Batch: <strong>${studentInfo.batch||'—'}</strong> &nbsp;|&nbsp; Date: ${new Date().toLocaleDateString('en-IN')}</div>
+  <div class="note">Questions and correct answers only. No solutions.</div>
+  ${body}
+  </body></html>`;
+
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  win.onload=()=>{ win.focus(); win.print(); };
+}
 
 // ══ GOOGLE FORMS ══
 function showToast(msg,isError=false){
